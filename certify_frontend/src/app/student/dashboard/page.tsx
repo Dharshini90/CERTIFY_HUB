@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { LogOut, Upload, FileText, CheckCircle, XCircle, Clock, UserCircle, Trash2 } from 'lucide-react';
+import { LogOut, Upload, FileText, CheckCircle, XCircle, Clock, UserCircle, Trash2, Eye } from 'lucide-react';
 import api from '@/lib/api';
 import { Platform, Category, Certificate, StudentDashboard as DashboardData } from '@/types';
 import { formatDate, formatFileSize, cn } from '@/lib/utils';
+import { Modal } from '@/components/ui/Modal';
 
 export default function StudentDashboard() {
     const router = useRouter();
@@ -23,6 +24,7 @@ export default function StudentDashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadMessage, setUploadMessage] = useState('');
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [viewingCertificate, setViewingCertificate] = useState<Certificate | null>(null);
 
     useEffect(() => {
         if (!user || user.role !== 'student') {
@@ -112,6 +114,15 @@ export default function StudentDashboard() {
         } catch (error: any) {
             alert(error.response?.data?.error || 'Failed to delete certificate');
         }
+    };
+
+    const getCertificateUrl = (filePath: string) => {
+        // Normalize backslashes to forward slashes for URLs (Windows compatibility)
+        const normalizedPath = filePath.replace(/\\/g, '/');
+        // Remove 'uploads/' prefix because the static route is /uploads
+        const path = normalizedPath.startsWith('uploads/') ? normalizedPath.replace('uploads/', '') : normalizedPath;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5200';
+        return `${baseUrl}/uploads/${path}`;
     };
 
     const showCategories = selectedPlatform && platforms.find(p => p.id === selectedPlatform)?.has_categories;
@@ -330,15 +341,26 @@ export default function StudentDashboard() {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-5 text-right">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="danger"
-                                                        onClick={() => handleDelete(cert.id)}
-                                                        className="w-9 h-9 p-0 rounded-xl transition-all shadow-sm"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="secondary"
+                                                            onClick={() => setViewingCertificate(cert)}
+                                                            className="w-9 h-9 p-0 rounded-xl transition-all shadow-sm"
+                                                            title="View"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="danger"
+                                                            onClick={() => handleDelete(cert.id)}
+                                                            className="w-9 h-9 p-0 rounded-xl transition-all shadow-sm"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -357,6 +379,63 @@ export default function StudentDashboard() {
                     </Card>
                 </div>
             </div>
+
+            {/* View Certificate Modal */}
+            <Modal
+                isOpen={!!viewingCertificate}
+                onClose={() => setViewingCertificate(null)}
+                title={viewingCertificate?.file_name}
+                size="lg"
+            >
+                {viewingCertificate && (
+                    <div className="flex flex-col items-center">
+                        {viewingCertificate.file_type.includes('image') ? (
+                            <div className="relative w-full overflow-hidden rounded-xl border border-slate-200">
+                                <img
+                                    src={getCertificateUrl(viewingCertificate.file_path)}
+                                    alt={viewingCertificate.file_name}
+                                    className="w-full h-auto"
+                                />
+                            </div>
+                        ) : viewingCertificate.file_type.includes('pdf') ? (
+                            <iframe
+                                src={getCertificateUrl(viewingCertificate.file_path)}
+                                className="w-full h-[70vh] rounded-xl border border-slate-200"
+                                title={viewingCertificate.file_name}
+                            />
+                        ) : (
+                            <div className="py-12 text-center">
+                                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                                <p className="text-slate-600 font-medium">This file type cannot be previewed directly.</p>
+                                <a
+                                    href={getCertificateUrl(viewingCertificate.file_path)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary-600 font-bold hover:underline mt-2 inline-block"
+                                >
+                                    Open in new tab
+                                </a>
+                            </div>
+                        )}
+                        <div className="w-full mt-6 pt-6 border-t border-slate-100 flex justify-between items-center text-sm">
+                            <div className="text-slate-500">
+                                <span className="font-bold text-slate-700">Platform:</span> {viewingCertificate.platform_name}
+                                {viewingCertificate.category_name && (
+                                    <> <span className="mx-2">•</span> <span className="font-bold text-slate-700">Category:</span> {viewingCertificate.category_name}</>
+                                )}
+                            </div>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => window.open(getCertificateUrl(viewingCertificate.file_path), '_blank')}
+                                className="rounded-xl"
+                            >
+                                Open Original
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }
