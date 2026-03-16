@@ -15,6 +15,7 @@ router.use(requireRole('faculty'));
 
 // Student management
 router.get('/students', FacultyController.getStudents);
+router.delete('/students/:studentId', FacultyController.deleteStudent);
 router.get('/students/:studentId/certificates', FacultyController.getStudentCertificates);
 router.get('/certificates/:certificateId/file', FacultyController.getCertificateFile);
 router.put('/certificates/:certificateId/verify', FacultyController.verifyCertificate);

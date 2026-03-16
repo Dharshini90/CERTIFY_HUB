@@ -1,0 +1,88 @@
+# CertifyHub: Viva Preparation Guide
+
+This guide provides a comprehensive yet easy-to-understand breakdown of the CertifyHub project, designed to help you ace your project viva.
+
+---
+
+## 1. Project Overview
+**CertifyHub** is a centralized platform designed for educational institutions to manage student certifications (like Coursera, Udemy, NPTEL, etc.). It automates the process of submission, verification, and departmental reporting, replacing manual or messy spreadsheet-based systems.
+
+### The Problem
+*   Students have difficulty tracking multiple certificates.
+*   Faculty manually verifies authenticity, which is time-consuming.
+*   HODs lack real-time data on departmental certification trends.
+
+### The Solution: CertifyHub
+*   **Students** upload certificates easily.
+*   **Faculty** verifies them with a simple "Accept" or "Reject" (providing feedback).
+*   **HODs** get a birds-eye view of the department's progress with analytics and bulk export tools.
+
+---
+
+## 2. Technology Stack (The "How it's Built")
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js (React) | High-performance user interface with optimized routing. |
+| **Styling** | Tailwind CSS | Sleek, modern, and responsive design (works on mobile/desktop). |
+| **Backend** | Node.js + Express + TypeScript | Secure, type-safe RESTful API for handling logic. |
+| **Database** | PostgreSQL | Robust relational database for structured data storage. |
+| **Auth** | JWT (JSON Web Tokens) | Secure, stateless authentication for all users. |
+| **File Handling** | Multer & Archiver | Handles uploads and creates ZIP files for bulk downloads. |
+| **Reporting** | ExcelJS | Generates professional Excel sheets for HOD reports. |
+
+---
+
+## 3. Project Architecture
+The project follows a **Client-Server Architecture**:
+1.  **Frontend (Client)**: Built with Next.js, it communicates with the backend via **Axios**.
+2.  **Backend (Server)**: An Express server written in TypeScript that follows the **MVC (Model-View-Controller)** pattern.
+    *   **Routes**: Define entry points (e.g., `/api/hod/dashboard`).
+    *   **Controllers**: Handle requested logic (e.g., [getDashboardStats](file:///D:/CERTIFY_HUB/certify_backend/src/controllers/hodController.ts#11-35)).
+    *   **Models**: Manage database queries (e.g., [UserModel](file:///D:/CERTIFY_HUB/certify_backend/src/models/User.ts#4-231), [CertificateModel](file:///D:/CERTIFY_HUB/certify_backend/src/models/Certificate.ts#13-250)).
+3.  **Database**: PostgreSQL stores users, certificates, departments, and verification logs.
+
+---
+
+## 4. Key Modules & Features
+
+### A. Student Module
+*   **Dashboard**: Shows total uploaded vs. verified certificates.
+*   **Upload**: Dynamic forms to select platforms (Coursera, etc.) and upload files (PDF/Image).
+*   **Profile**: Manage personal details and monitor rejection reasons.
+
+### B. Faculty Module
+*   **Student Ledger**: A list of all registered students with search/filter (Year/Section).
+*   **Verification System**: A dedicated viewer to preview certificates and verify them.
+*   **Student Management**: Now includes a **Delete** option to remove student accounts and their data permanently.
+
+### C. HOD Module (The Management Portal)
+*   **Real-time Analytics**: High-level KPIs (Total, Pending, Accepted, Rejected).
+*   **Completion Rates**: A visual progress indicator of departmental verification status.
+*   **Bulk Export Tools**:
+    *   **ZIP Download**: Downloads all certificates of a department in a structured folder.
+    *   **Excel Export**: Generates a detailed data report for admin meetings.
+
+---
+
+## 5. Top 5 "Must-Know" Viva Questions
+
+1.  **Q: How is security handled in this project?**
+    *   **A**: We use **JWT (JSON Web Tokens)** for session management. Passwords are never stored as plain text—they are hashed using **Bcrypt**. Only authorized roles (`hod`, `faculty`) can access management endpoints using a [requireRole](file:///D:/CERTIFY_HUB/certify_backend/src/middleware/auth.ts#36-51) middleware.
+
+2.  **Q: How do you ensure an HOD only sees their own department's data?**
+    *   **A**: This is called **Data Isolation**. When an HOD logs in, their `department` is embedded in the JWT. The backend API checks this department field and restricts all database queries to only fetch records matching that specific department.
+
+3.  **Q: What happens when a student is deleted?**
+    *   **A**: It is a "clean" deletion. The system removes the student's database record, all their certificate records, AND uses the `fs` module to physically delete the uploaded files from the server's storage to save space.
+
+4.  **Q: How did you implement the PDF/Image preview?**
+    *   **A**: We created a secure file stream API. The frontend uses an `<iframe>` for PDFs and an `<img>` tag for images, fetching the file from the backend using an authentication token to ensure security.
+
+5.  **Q: Why did you choose PostgreSQL over a NoSQL database like MongoDB?**
+    *   **A**: CertifyHub relies on strictly **Relational Data** (Students belong to Sections, Sections to Departments). SQL's "Joins" and "Foreign Key" constraints ensure data integrity, which is crucial for academic records.
+
+---
+
+## 6. Closing Statement
+CertifyHub is more than just a storage folder—it's an **End-to-End Verification Pipeline**. It bridges the gap between student achievement and administrative record-keeping with a focus on **Security, Scalability, and Clean UI/UX.**

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { GraduationCap, Users } from 'lucide-react';
+import { GraduationCap, Users, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -16,6 +16,8 @@ export default function HomePage() {
                 router.push('/student/dashboard');
             } else if (user.role === 'faculty') {
                 router.push('/faculty/dashboard');
+            } else if (user.role === 'hod') {
+                router.push('/hod/dashboard');
             }
         }
     }, [user, router]);
@@ -39,7 +41,7 @@ export default function HomePage() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto animate-slide-up">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto animate-slide-up">
                     {/* Student Login Card */}
                     <Link href="/student/login">
                         <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-primary-500/20">
@@ -67,10 +69,28 @@ export default function HomePage() {
                                 </div>
                                 <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Faculty Login</h2>
                                 <p className="text-slate-500 font-medium">
-                                    Streamline the verification process with bulk management and advanced reporting tools.
+                                    Streamline verification with bulk management and advanced reporting.
                                 </p>
                                 <div className="mt-8 text-secondary-600 font-black text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                                     Admin Access <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* HOD Login Card */}
+                    <Link href="/hod/login" className="md:col-span-2 lg:col-span-1">
+                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-indigo-500/20 md:max-w-md md:mx-auto lg:max-w-none">
+                            <div className="flex flex-col items-center text-center p-4">
+                                <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-indigo-400 rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/40 group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                                    <ShieldCheck className="w-12 h-12 text-white" />
+                                </div>
+                                <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">HOD Login</h2>
+                                <p className="text-slate-500 font-medium">
+                                    Heads of Departments can oversee departmental analytics and reports.
+                                </p>
+                                <div className="mt-8 text-indigo-600 font-black text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                                    HOD Portal <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 </div>
                             </div>
                         </div>

@@ -4,13 +4,14 @@ import { cn } from '@/lib/utils';
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label?: string;
     error?: string;
+    containerClassName?: string;
     options: { value: string | number; label: string }[];
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-    ({ label, error, options, className, ...props }, ref) => {
+    ({ label, error, containerClassName = 'w-full', options, className, ...props }, ref) => {
         return (
-            <div className="w-full space-y-1.5">
+            <div className={cn("space-y-1.5", containerClassName)}>
                 {label && (
                     <label className="block text-sm font-semibold text-slate-700 ml-1">
                         {label}

@@ -101,9 +101,9 @@ export class AuthController {
 
     static async registerFaculty(req: Request, res: Response): Promise<void> {
         try {
-            const { email, password, name } = req.body;
+            const { email, password, name, department } = req.body;
 
-            if (!email || !password || !name) {
+            if (!email || !password || !name || !department) {
                 throw new AppError('Missing required fields', 400);
             }
 
@@ -122,6 +122,7 @@ export class AuthController {
                 password: password_hash,
                 role: 'faculty',
                 name,
+                department,
             });
 
             const { password_hash: _, ...userWithoutPassword } = user;

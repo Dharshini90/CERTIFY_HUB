@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Users, User, Lock, Save, ArrowLeft, CheckCircle } from 'lucide-react';
 import api from '@/lib/api';
@@ -15,7 +14,6 @@ import Link from 'next/link';
 interface ProfileForm {
     name: string;
     email: string;
-    department: string;
 }
 
 interface PasswordForm {
@@ -24,39 +22,25 @@ interface PasswordForm {
     confirmPassword: string;
 }
 
-export default function FacultyProfilePage() {
+export default function HodProfilePage() {
     const router = useRouter();
     const { user, setUser } = useAuth();
     const [profileSaving, setProfileSaving] = useState(false);
     const [pwdSaving, setPwdSaving] = useState(false);
     const [profileMsg, setProfileMsg] = useState<{ text: string; ok: boolean } | null>(null);
     const [pwdMsg, setPwdMsg] = useState<{ text: string; ok: boolean } | null>(null);
-    const [departments, setDepartments] = useState<{ id: number; name: string }[]>([]);
 
     const profileForm = useForm<ProfileForm>();
     const pwdForm = useForm<PasswordForm>();
 
     useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const res = await api.get('/faculty/departments');
-                setDepartments(res.data.departments || []);
-            } catch (err) {
-                console.error('Failed to load departments');
-            }
-        };
-        fetchDepartments();
-    }, []);
-
-    useEffect(() => {
-        if (!user || user.role !== 'faculty') {
-            router.push('/faculty/login');
+        if (!user || user.role !== 'hod') {
+            router.push('/hod/login');
             return;
         }
         profileForm.reset({
             name: user.name || '',
             email: user.email || '',
-            department: user.department || '',
         });
     }, [user, profileForm, router]);
 
@@ -106,7 +90,7 @@ export default function FacultyProfilePage() {
                                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">My Profile</p>
                             </div>
                         </div>
-                        <Link href="/faculty/dashboard">
+                        <Link href="/hod/dashboard">
                             <Button variant="secondary" className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50">
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Back to Dashboard
@@ -148,16 +132,6 @@ export default function FacultyProfilePage() {
                                 })}
                             />
                         </div>
-
-                        <Select
-                            label="Department"
-                            options={[
-                                { value: '', label: 'Select Department' },
-                                ...departments.map(d => ({ value: d.name, label: d.name }))
-                            ]}
-                            error={profileForm.formState.errors.department?.message}
-                            {...profileForm.register('department', { required: 'Department is required' })}
-                        />
 
                         {profileMsg && (
                             <div className={`px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2 ${profileMsg.ok ? 'bg-green-50 border border-green-100 text-green-700' : 'bg-red-50 border border-red-100 text-red-700'}`}>

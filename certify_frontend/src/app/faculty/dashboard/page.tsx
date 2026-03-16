@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
-import { LogOut, Download, Eye, FileDown, Search, UserPlus, Users, CheckCircle, XCircle, Settings, List, UserCircle } from 'lucide-react';
+import { LogOut, Download, Eye, FileDown, Search, UserPlus, Users, CheckCircle, XCircle, Settings, List, UserCircle, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { StudentListItem, Certificate, Platform, Category, PaginatedResponse } from '@/types';
 import { formatDate, isPDF, isImage, cn } from '@/lib/utils';
@@ -131,6 +131,20 @@ export default function FacultyDashboard() {
             link.remove();
         } catch (error) {
             console.error('Failed to download:', error);
+        }
+    };
+
+    const handleDeleteStudent = async (student: StudentListItem) => {
+        if (!window.confirm(`Are you sure you want to delete ${student.name}? This will permanently remove all their profile data and certificates.`)) {
+            return;
+        }
+
+        try {
+            await api.delete(`/faculty/students/${student.id}`);
+            loadStudents(); // Refresh the list
+        } catch (error) {
+            console.error('Failed to delete student:', error);
+            alert('Failed to delete student. Please try again.');
         }
     };
 
@@ -392,6 +406,15 @@ export default function FacultyDashboard() {
                                                     title="Download All"
                                                 >
                                                     <Download className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => handleDeleteStudent(student)}
+                                                    className="w-10 h-10 p-0 rounded-xl bg-white border-slate-100 hover:border-red-200 hover:text-red-600 transition-all shadow-sm"
+                                                    title="Delete Student"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
                                         </td>

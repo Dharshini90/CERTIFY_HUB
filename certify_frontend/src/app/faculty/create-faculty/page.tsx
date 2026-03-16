@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { UserPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -15,6 +16,7 @@ interface CreateFacultyForm {
     name: string;
     email: string;
     password: string;
+    department: string;
 }
 
 export default function FacultyCreatePage() {
@@ -23,6 +25,19 @@ export default function FacultyCreatePage() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [departments, setDepartments] = useState<{ id: number; name: string }[]>([]);
+
+    useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const res = await api.get('/faculty/departments');
+                setDepartments(res.data.departments || []);
+            } catch (err) {
+                console.error('Failed to load departments');
+            }
+        };
+        fetchDepartments();
+    }, []);
 
     useEffect(() => {
         if (!user || user.role !== 'faculty') {
@@ -126,6 +141,16 @@ export default function FacultyCreatePage() {
                                     message: 'Password must be at least 6 characters',
                                 },
                             })}
+                        />
+
+                        <Select
+                            label="Department"
+                            options={[
+                                { value: '', label: 'Select Department' },
+                                ...departments.map(d => ({ value: d.name, label: d.name }))
+                            ]}
+                            error={errors.department?.message}
+                            {...register('department', { required: 'Department is required' })}
                         />
 
                         <Button type="submit" className="w-full h-12 shadow-secondary-500/25" variant="secondary" isLoading={isLoading}>

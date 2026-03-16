@@ -13,10 +13,10 @@ export class User {
 
     @Column({
         type: "enum",
-        enum: ["student", "faculty"],
+        enum: ["student", "faculty", "hod"],
         default: "student"
     })
-    role!: "student" | "faculty";
+    role!: "student" | "faculty" | "hod";
 
     @Column({ nullable: true })
     roll_number!: string;

@@ -2,7 +2,7 @@
 export interface User {
     id: string;
     email: string;
-    role: 'student' | 'faculty';
+    role: 'student' | 'faculty' | 'hod';
     roll_number?: string;
     name: string;
     year?: string;
@@ -20,7 +20,7 @@ export interface LoginCredentials {
 export interface RegisterData {
     email: string;
     password: string;
-    role: 'student' | 'faculty';
+    role: 'student' | 'faculty' | 'hod';
     roll_number?: string;
     name: string;
     year?: string;

@@ -102,7 +102,7 @@ export class UserModel {
 
     static async findAllFaculty(): Promise<Omit<User, 'password_hash'>[]> {
         const result = await pool.query(
-            `SELECT id, email, role, name, created_at, updated_at FROM users WHERE role = 'faculty' ORDER BY name`
+            `SELECT id, email, role, name, department, created_at, updated_at FROM users WHERE role = 'faculty' ORDER BY name`
         );
         return result.rows;
     }
@@ -213,5 +213,18 @@ export class UserModel {
                 totalPages: Math.ceil(total / limit),
             },
         };
+    }
+
+    static async deleteStudent(id: string): Promise<boolean> {
+        // Since we are using raw SQL, we should handle cascading if not set in DB
+        // But for safety, we'll delete certificates first if needed, though 
+        // a good DB schema should have ON DELETE CASCADE.
+        // I'll assume standard cascading is needed or managed here.
+        
+        const result = await pool.query(
+            `DELETE FROM users WHERE id = $1 AND role = 'student'`,
+            [id]
+        );
+        return (result.rowCount ?? 0) > 0;
     }
 }

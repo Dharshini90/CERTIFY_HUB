@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.routes';
 import studentRoutes from './routes/student.routes';
 import facultyRoutes from './routes/faculty.routes';
 import platformRoutes from './routes/platform.routes';
+import hodRoutes from './routes/hod.routes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -61,6 +62,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/platforms', platformRoutes);
+app.use('/api/hod', hodRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

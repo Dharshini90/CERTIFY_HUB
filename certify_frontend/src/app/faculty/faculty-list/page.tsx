@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-interface Faculty { id: string; name: string; email: string; created_at: string; }
+interface Faculty { id: string; name: string; email: string; department?: string; created_at: string; }
 
 export default function FacultyListPage() {
     const router = useRouter();
@@ -125,13 +125,14 @@ export default function FacultyListPage() {
                                     <th className="px-6 py-4 text-left">#</th>
                                     <th className="px-6 py-4 text-left">Name</th>
                                     <th className="px-6 py-4 text-left">Email</th>
+                                    <th className="px-6 py-4 text-left">Department</th>
                                     <th className="px-6 py-4 text-left">Joined</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {faculty.length === 0 && (
-                                    <tr><td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-medium text-sm">No faculty members found.</td></tr>
+                                <td colSpan={6} className="px-6 py-16 text-center text-slate-400 font-medium text-sm">No faculty members found.</td>
                                 )}
                                 {faculty.map((f, i) => (
                                     <tr key={f.id} className="group hover:bg-slate-50/50 transition-colors">
@@ -148,19 +149,13 @@ export default function FacultyListPage() {
                                             <span className="text-sm text-slate-600 font-medium">{f.email}</span>
                                         </td>
                                         <td className="px-6 py-5">
+                                            <span className="text-sm text-slate-600">{f.department || <span className="text-slate-400 italic">Not Assigned</span>}</span>
+                                        </td>
+                                        <td className="px-6 py-5">
                                             <span className="text-xs font-bold text-slate-400">{formatDate(f.created_at)}</span>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex justify-end gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    onClick={() => openEdit(f)}
-                                                    className="w-9 h-9 p-0 rounded-xl bg-white border-slate-100 hover:border-primary-200 hover:text-primary-600 transition-all shadow-sm"
-                                                    title="Edit"
-                                                >
-                                                    <Pencil className="w-4 h-4" />
-                                                </Button>
                                                 {f.id !== user?.id && (
                                                     <Button
                                                         size="sm"

@@ -172,4 +172,32 @@ export class FacultyController {
             }
         }
     }
+
+    static async deleteStudent(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { studentId } = req.params;
+            
+            // Delete certificates first (to clean up physical files)
+            const certificates = await CertificateModel.findByStudentId(studentId);
+            for (const cert of certificates) {
+                if (cert.file_path) {
+                    FileService.deleteFile(cert.file_path);
+                }
+            }
+
+            const deleted = await UserModel.deleteStudent(studentId);
+            if (!deleted) {
+                throw new AppError('Student not found or could not be deleted', 404);
+            }
+
+            res.json({ message: 'Student and all associated records deleted successfully' });
+        } catch (error) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({ error: error.message });
+            } else {
+                console.error('Delete student error:', error);
+                res.status(500).json({ error: 'Failed to delete student' });
+            }
+        }
+    }
 }

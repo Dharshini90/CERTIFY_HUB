@@ -3,7 +3,7 @@ export interface User {
     id: string;
     email: string;
     password_hash: string;
-    role: 'student' | 'faculty';
+    role: 'student' | 'faculty' | 'hod';
     roll_number?: string;
     name: string;
     year?: string;
@@ -16,7 +16,7 @@ export interface User {
 export interface CreateUserDTO {
     email: string;
     password: string;
-    role: 'student' | 'faculty';
+    role: 'student' | 'faculty' | 'hod';
     roll_number?: string;
     name: string;
     year?: string;
