@@ -14,17 +14,20 @@ A centralized web-based system for managing, viewing, verifying, and exporting s
 
 ### Faculty Module
 - ✅ Faculty login and authentication
-- ✅ View all students with certificate counts
+- ✅ View all students with certificate counts and **"Verified By"** status
 - ✅ Search and filter students by academic year, section, name, or roll number
-- ✅ View all certificates for any student
+- ✅ View all certificates for any student with individual verifier names
 - ✅ PDF and image preview support
-- ✅ Accept/reject certificate verification
+- ✅ Accept/reject certificate verification (recorded with verifier identity)
 - ✅ Download individual student certificates as ZIP
 - ✅ Bulk download with filters (creates nested ZIP structure)
 - ✅ Export reports in CSV, Excel, or PDF format
 
 ### HOD Module
 - ✅ HOD login with department scoping
+- ✅ **Administrative Delegation**: Create faculty accounts and grant/revoke admin powers
+- ✅ **Department Management**: List all department faculty and manage their administrative status
+- ✅ **Faculty Deletion**: Securely remove faculty profiles from the platform
 - ✅ Department-level dashboard stats (total, verified, pending, rejected)
 - ✅ Platform adoption and completion rate analytics
 - ✅ Department ledger with filters (year, section, platform, status)
@@ -233,18 +236,24 @@ Frontend will run on `http://localhost:3000`
 
 1. **Login**: Use HOD credentials (department is tied to your account)
 
-2. **View Department Dashboard**:
+2. **Faculty Management**:
+   - **Register Faculty**: Use the "Create Faculty" button in the header to register new faculty members for your department.
+   - **Delegate Admin Power**: Visit the "Faculty List" to promote faculty members to "Super Admin" status, granting them registration and deletion privileges.
+   - **Revoke Privileges**: Use the action menu in the Faculty List or Dashboard to revoke administrative status instantly.
+
+3. **View Department Dashboard**:
    - See totals (uploaded, verified, pending, rejected)
    - Check platform adoption and completion rate charts
+   - View a list of current Department Administrators and take quick actions.
 
-3. **Ledger & Filters**:
+4. **Ledger & Filters**:
    - Filter by year, section, platform, status
    - Drill into certificate records for the department
 
-4. **Bulk Download**:
+5. **Bulk Download**:
    - Apply filters, then click "Bulk Download" to get a department ZIP archive
 
-5. **Export Department Report**:
+6. **Export Department Report**:
    - Click "Export" to download an Excel report containing the filtered ledger
 
 ## 🔐 Default Credentials
