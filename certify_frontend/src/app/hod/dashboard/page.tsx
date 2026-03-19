@@ -19,11 +19,15 @@ import {
     UserCircle,
     LayoutDashboard,
     FileSpreadsheet,
-    Archive
+    Archive,
+    UserPlus,
+    ShieldAlert,
+    Shield
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Certificate, Platform, PaginatedResponse } from '@/types';
 import { formatDate, isPDF, isImage, cn } from '@/lib/utils';
+import { RegisterFacultyModal } from './RegisterFacultyModal';
 
 export default function HodDashboard() {
     const router = useRouter();
@@ -53,6 +57,9 @@ export default function HodDashboard() {
     
     // UI States
     const [authToken, setAuthToken] = useState<string | null>(null);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [faculty, setFaculty] = useState<any[]>([]);
+    const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
     useEffect(() => {
         if (!user || user.role !== 'hod') {
@@ -67,14 +74,15 @@ export default function HodDashboard() {
     const loadAllData = async () => {
         setIsLoading(true);
         try {
-            const [statsRes, completionRes, ledgerRes, platformRes, yearlyRes, facultyRes, trendRes] = await Promise.all([
+            const [statsRes, completionRes, ledgerRes, platformRes, yearlyRes, facultyActivityRes, trendRes, facultyListRes] = await Promise.all([
                 api.get('/hod/stats'),
                 api.get('/hod/completion-rate'),
                 api.get('/hod/ledger'),
                 api.get('/hod/platform-adoption'),
                 api.get('/hod/yearly-stats'),
                 api.get('/hod/faculty-activity'),
-                api.get('/hod/monthly-trend')
+                api.get('/hod/monthly-trend'),
+                api.get('/faculty/faculty-list')
             ]);
             
             setStats(statsRes.data);
@@ -82,8 +90,9 @@ export default function HodDashboard() {
             setLedger(ledgerRes.data.certificates);
             setPlatformStats(platformRes.data);
             setYearlyStats(yearlyRes.data);
-            setFacultyActivity(facultyRes.data);
+            setFacultyActivity(facultyActivityRes.data);
             setMonthlyTrend(trendRes.data);
+            setFaculty(facultyListRes.data.faculty || []);
 
         } catch (error) {
             console.error('Failed to load HOD data:', error);
@@ -182,6 +191,26 @@ export default function HodDashboard() {
         router.push('/');
     };
 
+    const handleToggleAdmin = async (f: any) => {
+        const action = f.is_department_admin ? 'revoke' : 'grant';
+        if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} admin privileges for ${f.name}?`)) return;
+        
+        try {
+            await api.put(`/faculty/faculty-list/${f.id}`, { 
+                is_department_admin: !f.is_department_admin 
+            });
+            await loadAllData();
+            flash(`Admin privileges updated!`, true);
+        } catch (e: any) {
+            flash(e.response?.data?.error || 'Failed to update admin status', false);
+        }
+    };
+
+    const flash = (text: string, ok: boolean) => {
+        setMsg({ text, ok });
+        setTimeout(() => setMsg(null), 3000);
+    };
+
     if (isLoading && !stats.total) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -226,6 +255,14 @@ export default function HodDashboard() {
                                 <UserCircle className="w-[18px] h-[18px] mr-2 text-slate-600" />
                                 Profile
                             </Button>
+                            <Button 
+                                onClick={() => setIsRegisterModalOpen(true)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white !py-2 !px-4 !rounded-xl text-[14px] !font-bold shadow-md shadow-indigo-500/20 group"
+                            >
+                                <UserPlus className="w-[18px] h-[18px] mr-2 group-hover:scale-110 transition-transform" />
+                                <span className="hidden lg:inline uppercase tracking-widest text-[10px]">Register Faculty</span>
+                                <span className="lg:hidden">Register</span>
+                            </Button>
                             <Button variant="secondary" onClick={handleLogout} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50">
                                 <LogOut className="w-[18px] h-[18px] mr-2 text-slate-600 hover:text-red-500 transition-colors" />
                                 Logout
@@ -234,6 +271,19 @@ export default function HodDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Flash Messages */}
+            {msg && (
+                <div className="fixed top-24 right-6 z-[100] animate-in fade-in slide-in-from-right-8 duration-300">
+                    <div className={cn(
+                        "px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3",
+                        msg.ok ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700" : "bg-rose-500/10 border-rose-500/20 text-rose-700"
+                    )}>
+                        <div className={cn("w-2 h-2 rounded-full animate-pulse", msg.ok ? "bg-emerald-500" : "bg-rose-500")} />
+                        <span className="text-sm font-black uppercase tracking-widest">{msg.text}</span>
+                    </div>
+                </div>
+            )}
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-10">
                 {/* Unified Hero Section */}
@@ -393,6 +443,74 @@ export default function HodDashboard() {
                             )) : (
                                 <p className="text-center py-10 text-xs font-bold text-slate-300 uppercase tracking-widest">No activity tracked</p>
                             )}
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Department Administrators Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <Card className="p-8 space-y-6 border-none shadow-xl bg-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-50" />
+                        <div className="flex items-center justify-between relative z-10">
+                            <div>
+                                <h3 className="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] flex items-center gap-2 mb-1">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-600" />
+                                    Department Administrators
+                                </h3>
+                                <p className="text-xs font-bold text-slate-400">Faculty with Super Admin privileges</p>
+                            </div>
+                            <ShieldCheck className="w-6 h-6 text-indigo-200" />
+                        </div>
+
+                        <div className="space-y-3 relative z-10">
+                            {faculty.filter(f => f.is_department_admin).length > 0 ? (
+                                faculty.filter(f => f.is_department_admin).map((f) => (
+                                    <div key={f.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-md transition-all group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-black border border-indigo-200 shadow-sm">
+                                                {f.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-black text-slate-700">{f.name}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 truncate max-w-[150px]">{f.email}</span>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => handleToggleAdmin(f)}
+                                            className="!py-2 !px-4 !rounded-xl text-[10px] !font-black uppercase tracking-widest border-rose-100 text-rose-600 hover:bg-rose-50 shadow-sm"
+                                        >
+                                            <ShieldAlert className="w-3.5 h-3.5 mr-2" />
+                                            Revoke
+                                        </Button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-10 text-center space-y-2">
+                                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">No active department admins</p>
+                                    <p className="text-[10px] font-bold text-slate-400">Use "Register Faculty" to create one</p>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
+
+                    <Card className="p-8 space-y-6 border-none shadow-xl bg-gradient-to-br from-slate-800 to-slate-900 text-white flex flex-col justify-center relative overflow-hidden">
+                        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+                        <div className="relative z-10 space-y-4 text-center">
+                            <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-white/10">
+                                <UserPlus className="w-8 h-8 text-indigo-300" />
+                            </div>
+                            <h4 className="text-xl font-black tracking-tight">Expand Your Team</h4>
+                            <p className="text-sm text-slate-400 max-w-[250px] mx-auto font-medium leading-relaxed">
+                                Need more help with verification? Add another faculty member and delegate administrative powers.
+                            </p>
+                            <Button 
+                                onClick={() => setIsRegisterModalOpen(true)}
+                                className="w-full bg-white text-slate-900 hover:bg-slate-50 !py-3 !rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-black/40"
+                            >
+                                Quick Provision
+                            </Button>
                         </div>
                     </Card>
                 </div>
@@ -598,6 +716,13 @@ export default function HodDashboard() {
                     </div>
                 </Card>
             </main>
+
+            <RegisterFacultyModal 
+                isOpen={isRegisterModalOpen}
+                onClose={() => setIsRegisterModalOpen(false)}
+                onSuccess={loadAllData}
+                department={user?.department}
+            />
         </div>
     );
 }

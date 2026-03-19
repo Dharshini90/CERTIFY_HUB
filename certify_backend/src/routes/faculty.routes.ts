@@ -11,7 +11,7 @@ router.get('/sections', AdminController.getSections as any);
 
 // All remaining routes require faculty authentication
 router.use(authenticateToken);
-router.use(requireRole('faculty'));
+router.use(requireRole(['faculty', 'hod']));
 
 // Student management
 router.get('/students', FacultyController.getStudents);

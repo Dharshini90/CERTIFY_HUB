@@ -31,10 +31,10 @@ export class UserModel {
         } = userData;
 
         const result = await pool.query(
-            `INSERT INTO users (email, password_hash, role, roll_number, name, year, department, section)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `INSERT INTO users (email, password_hash, role, roll_number, name, year, department, section, is_department_admin)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-            [email, password, role, roll_number, name, year, department, section]
+            [email, password, role, roll_number, name, year, department, section, userData.is_department_admin || false]
         );
 
         return result.rows[0];
@@ -47,6 +47,7 @@ export class UserModel {
         year?: string;
         department?: string;
         section?: string;
+        is_department_admin?: boolean;
     }): Promise<User | null> {
         const fields: string[] = [];
         const values: any[] = [];
@@ -58,6 +59,7 @@ export class UserModel {
         if (data.year !== undefined) { fields.push(`year = $${paramIndex++}`); values.push(data.year); }
         if (data.department !== undefined) { fields.push(`department = $${paramIndex++}`); values.push(data.department); }
         if (data.section !== undefined) { fields.push(`section = $${paramIndex++}`); values.push(data.section); }
+        if (data.is_department_admin !== undefined) { fields.push(`is_department_admin = $${paramIndex++}`); values.push(data.is_department_admin); }
 
         if (fields.length === 0) return null;
 
@@ -100,20 +102,29 @@ export class UserModel {
         );
     }
 
-    static async findAllFaculty(): Promise<Omit<User, 'password_hash'>[]> {
-        const result = await pool.query(
-            `SELECT id, email, role, name, department, created_at, updated_at FROM users WHERE role = 'faculty' ORDER BY name`
-        );
+    static async findAllFaculty(department?: string): Promise<Omit<User, 'password_hash'>[]> {
+        let query = `SELECT id, email, role, name, department, is_department_admin, created_at, updated_at FROM users WHERE role = 'faculty'`;
+        const params: any[] = [];
+        
+        if (department) {
+            query += ` AND department = $1`;
+            params.push(department);
+        }
+        
+        query += ` ORDER BY name`;
+        
+        const result = await pool.query(query, params);
         return result.rows;
     }
 
-    static async updateFaculty(id: string, data: { name?: string; email?: string }): Promise<User | null> {
+    static async updateFaculty(id: string, data: { name?: string; email?: string; is_department_admin?: boolean }): Promise<User | null> {
         const fields: string[] = [];
         const values: any[] = [];
         let paramIndex = 1;
 
         if (data.name !== undefined) { fields.push(`name = $${paramIndex++}`); values.push(data.name); }
         if (data.email !== undefined) { fields.push(`email = $${paramIndex++}`); values.push(data.email); }
+        if (data.is_department_admin !== undefined) { fields.push(`is_department_admin = $${paramIndex++}`); values.push(data.is_department_admin); }
 
         if (fields.length === 0) return null;
 
@@ -126,11 +137,30 @@ export class UserModel {
     }
 
     static async deleteFaculty(id: string): Promise<boolean> {
-        const result = await pool.query(
-            `DELETE FROM users WHERE id = $1 AND role = 'faculty'`,
-            [id]
-        );
-        return (result.rowCount ?? 0) > 0;
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Set verified_by to NULL for all certificates verified by this faculty member
+            await client.query(
+                'UPDATE certificates SET verified_by = NULL WHERE verified_by = $1',
+                [id]
+            );
+            
+            // Now delete the faculty member
+            const result = await client.query(
+                `DELETE FROM users WHERE id = $1 AND role = 'faculty'`,
+                [id]
+            );
+            
+            await client.query('COMMIT');
+            return (result.rowCount ?? 0) > 0;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     static async findStudents(
@@ -146,28 +176,28 @@ export class UserModel {
         } = filters;
 
         const offset = (page - 1) * limit;
-        const conditions: string[] = ["role = 'student'"];
+        const conditions: string[] = ["u.role = 'student'"];
         const params: any[] = [];
         let paramIndex = 1;
 
         if (year) {
-            conditions.push(`year = $${paramIndex++}`);
+            conditions.push(`u.year = $${paramIndex++}`);
             params.push(year);
         }
 
         if (department) {
-            conditions.push(`department = $${paramIndex++}`);
+            conditions.push(`u.department = $${paramIndex++}`);
             params.push(department);
         }
 
         if (section) {
-            conditions.push(`section = $${paramIndex++}`);
+            conditions.push(`u.section = $${paramIndex++}`);
             params.push(section);
         }
 
         if (search) {
             conditions.push(
-                `(name ILIKE $${paramIndex} OR roll_number ILIKE $${paramIndex})`
+                `(u.name ILIKE $${paramIndex} OR u.roll_number ILIKE $${paramIndex})`
             );
             params.push(`%${search}%`);
             paramIndex++;
@@ -177,12 +207,12 @@ export class UserModel {
 
         // Get total count
         const countResult = await pool.query(
-            `SELECT COUNT(*) FROM users WHERE ${whereClause}`,
+            `SELECT COUNT(*) FROM users u WHERE ${whereClause}`,
             params
         );
         const total = parseInt(countResult.rows[0].count);
 
-        // Get paginated data with certificate counts
+        // Get paginated data with certificate counts and verifier names
         const dataResult = await pool.query(
             `SELECT 
         u.id,
@@ -194,9 +224,11 @@ export class UserModel {
         u.section,
         COUNT(c.id) as total_certificates,
         COUNT(CASE WHEN c.verification_status = 'accepted' THEN 1 END) as verified_certificates,
-        COUNT(CASE WHEN c.verification_status = 'rejected' THEN 1 END) as rejected_certificates
+        COUNT(CASE WHEN c.verification_status = 'rejected' THEN 1 END) as rejected_certificates,
+        STRING_AGG(DISTINCT v.name, ', ') as verified_by_names
        FROM users u
        LEFT JOIN certificates c ON u.id = c.student_id
+       LEFT JOIN users v ON c.verified_by = v.id
        WHERE ${whereClause}
        GROUP BY u.id, u.roll_number, u.name, u.email, u.year, u.department, u.section
        ORDER BY u.roll_number

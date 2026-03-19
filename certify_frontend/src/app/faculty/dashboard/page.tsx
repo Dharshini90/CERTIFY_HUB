@@ -12,6 +12,8 @@ import { LogOut, Download, Eye, FileDown, Search, UserPlus, Users, CheckCircle, 
 import api from '@/lib/api';
 import { StudentListItem, Certificate, Platform, Category, PaginatedResponse } from '@/types';
 import { formatDate, isPDF, isImage, cn } from '@/lib/utils';
+import { RegisterFacultyModal } from '@/app/hod/dashboard/RegisterFacultyModal';
+
 
 export default function FacultyDashboard() {
     const router = useRouter();
@@ -31,6 +33,7 @@ export default function FacultyDashboard() {
     const [authToken, setAuthToken] = useState<string | null>(null);
     const [departments, setDepartments] = useState<{ id: number; name: string }[]>([]);
     const [sections, setSections] = useState<{ id: number; name: string }[]>([]);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
     useEffect(() => {
         if (!user || user.role !== 'faculty') {
@@ -239,14 +242,28 @@ export default function FacultyDashboard() {
                                 <UserCircle className="w-[18px] h-[18px] mr-2 text-slate-600" />
                                 Profile
                             </Button>
-                            <Button variant="secondary" onClick={() => router.push('/faculty/create-faculty')} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex">
-                                <UserPlus className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                Create Faculty
-                            </Button>
-                            <Button variant="secondary" onClick={() => router.push('/faculty/faculty-list')} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex">
-                                <List className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                Faculty List
-                            </Button>
+                            
+                            {user?.is_department_admin && (
+                                <>
+                                    <Button 
+                                        variant="secondary" 
+                                        onClick={() => setIsRegisterModalOpen(true)} 
+                                        className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex"
+                                    >
+                                        <UserPlus className="w-[18px] h-[18px] mr-2 text-slate-600" />
+                                        Create Faculty
+                                    </Button>
+                                    <Button 
+                                        variant="secondary" 
+                                        onClick={() => router.push('/faculty/faculty-list')} 
+                                        className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex"
+                                    >
+                                        <List className="w-[18px] h-[18px] mr-2 text-slate-600" />
+                                        Faculty List
+                                    </Button>
+                                </>
+                            )}
+                            
                             <Button variant="secondary" onClick={() => router.push('/faculty/settings')} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden lg:flex">
                                 <Settings className="w-[18px] h-[18px] mr-2 text-slate-600" />
                                 Settings
@@ -348,6 +365,7 @@ export default function FacultyDashboard() {
                                     <th className="px-6 py-4 text-left">Name / Info</th>
                                     <th className="px-6 py-4 text-left">Year / Dept</th>
                                     <th className="px-6 py-4 text-left">Section</th>
+                                    <th className="px-6 py-4 text-left">Verified By</th>
                                     <th className="px-6 py-4 text-left">Progress</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
@@ -372,6 +390,17 @@ export default function FacultyDashboard() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <span className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs uppercase">{student.section}</span>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <div className="flex flex-col max-w-[150px]">
+                                                {student.verified_by_names ? (
+                                                    <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 truncate shadow-sm" title={student.verified_by_names}>
+                                                        {student.verified_by_names}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[11px] font-medium text-slate-400 italic">No verifier yet</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex flex-col gap-1.5 min-w-[120px]">
@@ -502,7 +531,7 @@ export default function FacultyDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-2">
+                                        <div className="flex flex-col items-end gap-2 text-right">
                                             <span className={cn(
                                                 "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm flex items-center gap-2",
                                                 cert.verification_status === 'accepted' ? "bg-green-100 text-green-700" :
@@ -511,6 +540,12 @@ export default function FacultyDashboard() {
                                                 <div className={cn("w-1.5 h-1.5 rounded-full", cert.verification_status === 'accepted' ? "bg-green-600" : cert.verification_status === 'rejected' ? "bg-red-600" : "bg-yellow-600")} />
                                                 {cert.verification_status}
                                             </span>
+                                            {cert.verified_by_name && cert.verification_status !== 'pending' && (
+                                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
+                                                    <span className="opacity-40 italic">Verified By</span>
+                                                    <span className="underline underline-offset-4 decoration-indigo-200/50">{cert.verified_by_name}</span>
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -616,6 +651,13 @@ export default function FacultyDashboard() {
                     </Button>
                 </div>
             </Modal>
+
+            <RegisterFacultyModal 
+                isOpen={isRegisterModalOpen}
+                onClose={() => setIsRegisterModalOpen(false)}
+                onSuccess={loadStudents}
+                department={user?.department}
+            />
         </div>
     );
 }

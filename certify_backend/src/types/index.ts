@@ -9,6 +9,7 @@ export interface User {
     year?: string;
     department?: string;
     section?: string;
+    is_department_admin: boolean;
     created_at: Date;
     updated_at: Date;
 }
@@ -22,6 +23,7 @@ export interface CreateUserDTO {
     year?: string;
     department?: string;
     section?: string;
+    is_department_admin?: boolean;
 }
 
 export interface LoginDTO {

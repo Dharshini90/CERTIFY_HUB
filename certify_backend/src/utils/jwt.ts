@@ -11,6 +11,7 @@ export interface JWTPayload {
     name: string;
     roll_number?: string;
     department?: string;
+    is_department_admin: boolean;
 }
 
 export const generateToken = (user: Omit<User, 'password_hash'>): string => {
@@ -21,6 +22,7 @@ export const generateToken = (user: Omit<User, 'password_hash'>): string => {
         name: user.name,
         roll_number: user.roll_number,
         department: user.department,
+        is_department_admin: user.is_department_admin,
     };
 
     return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as any);

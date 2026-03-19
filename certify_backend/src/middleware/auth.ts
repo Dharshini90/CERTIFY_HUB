@@ -33,15 +33,17 @@ export const authenticateToken = (
     }
 };
 
-export const requireRole = (role: 'student' | 'faculty' | 'hod') => {
+export const requireRole = (role: 'student' | 'faculty' | 'hod' | ('student' | 'faculty' | 'hod')[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction): void => {
         if (!req.user) {
             res.status(401).json({ error: 'Authentication required' });
             return;
         }
 
-        if (req.user.role !== role) {
-            res.status(403).json({ error: `Access denied. ${role} role required` });
+        const allowedRoles = Array.isArray(role) ? role : [role];
+
+        if (!allowedRoles.includes(req.user.role)) {
+            res.status(403).json({ error: `Access denied. Authorized roles: ${allowedRoles.join(', ')}` });
             return;
         }
 

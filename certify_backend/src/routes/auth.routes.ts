@@ -6,10 +6,18 @@ const router = Router();
 
 router.post('/register', AuthController.register);
 router.post('/register-faculty', authenticateToken, (req, res, next) => {
-    if ((req as any).user?.role !== 'faculty') {
-        res.status(403).json({ error: 'Only faculty can register other faculty' });
+    const user = (req as any).user;
+    if (user?.role !== 'faculty' && user?.role !== 'hod') {
+        res.status(403).json({ error: 'Only HOD or faculty admins can register other faculty' });
         return;
     }
+    
+    // If faculty, must be department admin
+    if (user?.role === 'faculty' && !user?.is_department_admin) {
+        res.status(403).json({ error: 'Only department admins can register other faculty' });
+        return;
+    }
+    
     next();
 }, AuthController.registerFaculty);
 router.post('/login', AuthController.login);

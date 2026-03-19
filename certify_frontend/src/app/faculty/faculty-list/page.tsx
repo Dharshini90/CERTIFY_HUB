@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
-import { Users, ArrowLeft, Pencil, Trash2, CheckCircle, X } from 'lucide-react';
+import { Users, ArrowLeft, Pencil, Trash2, CheckCircle, X, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import api from '@/lib/api';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { RegisterFacultyModal } from '@/app/hod/dashboard/RegisterFacultyModal';
+import { UserPlus } from 'lucide-react';
 
-interface Faculty { id: string; name: string; email: string; department?: string; created_at: string; }
+interface Faculty { id: string; name: string; email: string; department?: string; is_department_admin: boolean; created_at: string; }
 
 export default function FacultyListPage() {
     const router = useRouter();
@@ -24,9 +26,18 @@ export default function FacultyListPage() {
     const [editEmail, setEditEmail] = useState('');
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
     useEffect(() => {
-        if (!user || user.role !== 'faculty') { router.push('/faculty/login'); return; }
+        if (!user) { router.push('/'); return; }
+        if (user.role !== 'faculty' && user.role !== 'hod') { router.push('/'); return; }
+        
+        // If faculty, must be a department admin to view this page
+        if (user.role === 'faculty' && !user.is_department_admin) {
+            router.push('/faculty/dashboard');
+            return;
+        }
+        
         loadFaculty();
     }, [user]);
 
@@ -72,6 +83,21 @@ export default function FacultyListPage() {
         }
     };
 
+    const handleToggleAdmin = async (f: Faculty) => {
+        const action = f.is_department_admin ? 'revoke' : 'grant';
+        if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} admin privileges for ${f.name}?`)) return;
+        
+        try {
+            await api.put(`/faculty/faculty-list/${f.id}`, { 
+                is_department_admin: !f.is_department_admin 
+            });
+            await loadFaculty();
+            flash(`Admin privileges ${f.is_department_admin ? 'revoked' : 'granted'} successfully!`, true);
+        } catch (e: any) {
+            flash(e.response?.data?.error || 'Failed to update admin status', false);
+        }
+    };
+
     return (
         <div className="min-h-screen">
             {/* Header */}
@@ -87,12 +113,23 @@ export default function FacultyListPage() {
                                 <p className="text-sm font-medium text-slate-500">Manage faculty accounts</p>
                             </div>
                         </div>
-                        <Link href="/faculty/dashboard">
-                            <Button variant="secondary" size="sm" className="rounded-xl">
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back to Dashboard
+                        <div className="flex items-center gap-3">
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                onClick={() => setIsRegisterModalOpen(true)}
+                                className="rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                            >
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Register Faculty
                             </Button>
-                        </Link>
+                            <Link href="/faculty/dashboard">
+                                <Button variant="secondary" size="sm" className="rounded-xl">
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Back to Dashboard
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -141,8 +178,18 @@ export default function FacultyListPage() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex flex-col">
-                                                <span className="font-bold text-slate-900 group-hover:text-secondary-600 transition-colors">{f.name}</span>
-                                                {f.id === user?.id && <span className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">You</span>}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-slate-900 group-hover:text-secondary-600 transition-all duration-300">{f.name}</span>
+                                                    {f.is_department_admin && (
+                                                        <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm animate-fade-in">
+                                                            <ShieldCheck className="w-3 h-3" />
+                                                            Admin
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    {f.id === user?.id && <span className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">You</span>}
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
@@ -156,7 +203,23 @@ export default function FacultyListPage() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex justify-end gap-2">
-                                                {f.id !== user?.id && (
+                                                {(user?.role === 'hod' || user?.is_department_admin) && f.id !== user?.id && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={() => handleToggleAdmin(f)}
+                                                        className={cn(
+                                                            "w-9 h-9 p-0 rounded-xl transition-all shadow-sm",
+                                                            f.is_department_admin 
+                                                                ? "text-red-500 hover:bg-red-50 border-red-100" 
+                                                                : "text-indigo-600 hover:bg-indigo-50 border-indigo-100"
+                                                        )}
+                                                        title={f.is_department_admin ? "Remove Admin Role" : "Make Department Admin"}
+                                                    >
+                                                        {f.is_department_admin ? <ShieldAlert className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                                                    </Button>
+                                                )}
+                                                {(user?.role === 'hod' || user?.is_department_admin) && f.id !== user?.id && (
                                                     <Button
                                                         size="sm"
                                                         variant="danger"
@@ -188,6 +251,13 @@ export default function FacultyListPage() {
                     </div>
                 </div>
             </Modal>
+
+            <RegisterFacultyModal 
+                isOpen={isRegisterModalOpen}
+                onClose={() => setIsRegisterModalOpen(false)}
+                onSuccess={loadFaculty}
+                department={user?.department}
+            />
         </div>
     );
 }

@@ -99,11 +99,15 @@ export class AuthController {
         }
     }
 
-    static async registerFaculty(req: Request, res: Response): Promise<void> {
+    static async registerFaculty(req: AuthRequest, res: Response): Promise<void> {
         try {
-            const { email, password, name, department } = req.body;
-
-            if (!email || !password || !name || !department) {
+            const { email, password, name, department, is_department_admin } = req.body;
+            const creatorDepartment = req.user?.department;
+            
+            // Use creator's department if not explicitly provided
+            const targetDepartment = department || creatorDepartment;
+            
+            if (!email || !password || !name || !targetDepartment) {
                 throw new AppError('Missing required fields', 400);
             }
 
@@ -122,7 +126,8 @@ export class AuthController {
                 password: password_hash,
                 role: 'faculty',
                 name,
-                department,
+                department: targetDepartment,
+                is_department_admin: !!is_department_admin
             });
 
             const { password_hash: _, ...userWithoutPassword } = user;

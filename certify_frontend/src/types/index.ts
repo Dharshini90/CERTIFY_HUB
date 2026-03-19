@@ -8,6 +8,7 @@ export interface User {
     year?: string;
     department?: string;
     section?: string;
+    is_department_admin: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -88,6 +89,7 @@ export interface StudentListItem {
     total_certificates: number;
     verified_certificates: number;
     rejected_certificates: number;
+    verified_by_names?: string;
 }
 
 export interface StudentFilters {
