@@ -45,6 +45,12 @@ export default function HodDashboard() {
     const [platforms, setPlatforms] = useState<Platform[]>([]);
     const [sections, setSections] = useState<{ id: number; name: string }[]>([]);
     
+    // Analytics Data
+    const [platformStats, setPlatformStats] = useState<any[]>([]);
+    const [yearlyStats, setYearlyStats] = useState<any[]>([]);
+    const [facultyActivity, setFacultyActivity] = useState<any[]>([]);
+    const [monthlyTrend, setMonthlyTrend] = useState<any[]>([]);
+    
     // UI States
     const [authToken, setAuthToken] = useState<string | null>(null);
 
@@ -61,15 +67,24 @@ export default function HodDashboard() {
     const loadAllData = async () => {
         setIsLoading(true);
         try {
-            const [statsRes, completionRes, ledgerRes] = await Promise.all([
+            const [statsRes, completionRes, ledgerRes, platformRes, yearlyRes, facultyRes, trendRes] = await Promise.all([
                 api.get('/hod/stats'),
                 api.get('/hod/completion-rate'),
-                api.get('/hod/ledger')
+                api.get('/hod/ledger'),
+                api.get('/hod/platform-adoption'),
+                api.get('/hod/yearly-stats'),
+                api.get('/hod/faculty-activity'),
+                api.get('/hod/monthly-trend')
             ]);
             
             setStats(statsRes.data);
             setCompletionRate(completionRes.data.rate);
             setLedger(ledgerRes.data.certificates);
+            setPlatformStats(platformRes.data);
+            setYearlyStats(yearlyRes.data);
+            setFacultyActivity(facultyRes.data);
+            setMonthlyTrend(trendRes.data);
+
         } catch (error) {
             console.error('Failed to load HOD data:', error);
         } finally {
@@ -220,67 +235,203 @@ export default function HodDashboard() {
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
-                {/* Statistics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard title="Total Certificates" value={stats.total} icon={<LayoutDashboard className="w-6 h-6" />} color="indigo" />
-                    <StatCard title="Accepted" value={stats.accepted} icon={<TrendingUp className="w-6 h-6" />} color="green" />
-                    <StatCard title="Pending Review" value={stats.pending} icon={<Filter className="w-6 h-6" />} color="yellow" />
-                    <StatCard title="Rejected" value={stats.rejected} icon={<X className="w-6 h-6" />} color="red" />
-                </div>
-
-                {/* Verification Status Card */}
-                <div className="grid grid-cols-1 gap-6">
-                    <Card className="p-12 border-none shadow-xl bg-indigo-600 text-white relative overflow-hidden">
-                        <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] bg-white/10 rounded-full blur-[80px]" />
-                        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-400/20 rounded-full blur-[60px]" />
+            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-10">
+                {/* Unified Hero Section */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-stretch">
+                    {/* Welcome & Status Card */}
+                    <Card className="xl:col-span-2 p-10 border-none shadow-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-indigo-800 text-white relative overflow-hidden flex flex-col justify-between min-h-[400px]">
+                        <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[70%] bg-white/10 rounded-full blur-[100px]" />
+                        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-indigo-400/20 rounded-full blur-[80px]" />
                         
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-around gap-12 h-full text-center md:text-left">
-                            <div className="max-w-md">
-                                <h2 className="text-3xl font-black tracking-tight mb-4">Departmental Verification Status</h2>
-                                <p className="text-white/80 text-lg font-medium mb-8 leading-relaxed">
-                                    Track the real-time progress of certificate validation across <span className="text-white font-bold underline decoration-indigo-300 underline-offset-4">{user?.department}</span>.
-                                </p>
-                                <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                                    <div className="px-5 py-3 bg-white/10 rounded-2xl backdrop-blur-md border border-white/10 flex items-center gap-3">
-                                        <TrendingUp className="w-5 h-5 text-indigo-200" />
-                                        <span className="text-sm font-black uppercase tracking-widest text-white">Live Sync Active</span>
-                                    </div>
-                                    <div className="px-5 py-3 bg-indigo-500/30 rounded-2xl backdrop-blur-md border border-white/10 flex items-center gap-3">
-                                        <ShieldCheck className="w-5 h-5 text-indigo-200" />
-                                        <span className="text-sm font-black uppercase tracking-widest text-white">Verified Data</span>
-                                    </div>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">
+                                    Department Overview
+                                </span>
+                                <div className="h-px w-12 bg-white/20" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Live Diagnostics</span>
+                            </div>
+                            <h2 className="text-4xl lg:text-5xl font-black tracking-tighter mb-4 leading-tight">
+                                Tracking <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-indigo-200">{user?.department}</span> <br/>
+                                <span className="opacity-60 italic font-serif">Verification Excellence.</span>
+                            </h2>
+                            <p className="text-white/70 text-lg font-medium max-w-lg leading-relaxed mb-8">
+                                Monitor real-time certificate validation progress and faculty performance across your department.
+                            </p>
+                        </div>
+
+                        <div className="relative z-10 flex flex-wrap gap-4 mt-auto">
+                            <div className="px-6 py-3 bg-white/10 rounded-2xl backdrop-blur-md border border-white/10 flex items-center gap-3 shadow-xl">
+                                <TrendingUp className="w-5 h-5 text-indigo-300" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">System Status</span>
+                                    <span className="text-xs font-black uppercase tracking-widest">Active Sync</span>
                                 </div>
                             </div>
-                            
-                            <div className="relative w-64 h-64">
+                            <div className="px-6 py-3 bg-indigo-500/30 rounded-2xl backdrop-blur-md border border-white/10 flex items-center gap-3 shadow-xl">
+                                <ShieldCheck className="w-5 h-5 text-indigo-300" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Data Integrity</span>
+                                    <span className="text-xs font-black uppercase tracking-widest">Verified Hub</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="absolute bottom-10 right-10 hidden lg:block">
+                            <div className="relative w-48 h-48">
                                 <svg className="w-full h-full transform -rotate-90">
+                                    <circle cx="96" cy="96" r="80" stroke="rgba(255,255,255,0.1)" strokeWidth="12" fill="transparent" />
                                     <circle
-                                        cx="128"
-                                        cy="128"
-                                        r="110"
-                                        stroke="rgba(255,255,255,0.1)"
-                                        strokeWidth="16"
-                                        fill="transparent"
-                                    />
-                                    <circle
-                                        cx="128"
-                                        cy="128"
-                                        r="110"
-                                        stroke="white"
-                                        strokeWidth="16"
-                                        fill="transparent"
-                                        strokeDasharray={2 * Math.PI * 110}
-                                        strokeDashoffset={2 * Math.PI * 110 * (1 - completionRate / 100)}
+                                        cx="96" cy="96" r="80" stroke="white" strokeWidth="12" fill="transparent"
+                                        strokeDasharray={2 * Math.PI * 80}
+                                        strokeDashoffset={2 * Math.PI * 80 * (1 - completionRate / 100)}
                                         strokeLinecap="round"
                                         className="transition-all duration-1000 ease-out"
                                     />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-6xl font-black">{Math.round(completionRate)}%</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-1">Validated</span>
+                                    <span className="text-4xl font-black">{Math.round(completionRate)}%</span>
+                                    <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Validated</span>
                                 </div>
                             </div>
+                        </div>
+                    </Card>
+
+                    {/* Quick Stats Grid */}
+                    <div className="grid grid-cols-2 gap-6 h-full">
+                        <CompactStatCard title="Total" value={stats.total} icon={<LayoutDashboard className="w-5 h-5" />} color="indigo" />
+                        <CompactStatCard title="Accepted" value={stats.accepted} icon={<TrendingUp className="w-5 h-5" />} color="green" />
+                        <CompactStatCard title="Pending" value={stats.pending} icon={<Filter className="w-5 h-5" />} color="yellow" />
+                        <CompactStatCard title="Rejected" value={stats.rejected} icon={<X className="w-5 h-5" />} color="red" />
+                    </div>
+                </div>
+
+                {/* Analytics Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Platform Adoption */}
+                    <Card className="p-8 space-y-6 border-none shadow-xl bg-white">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                                Platform Adoption
+                            </h3>
+                            <Archive className="w-5 h-5 text-indigo-100 fill-indigo-500" />
+                        </div>
+                        <div className="space-y-5">
+                            {platformStats.map((p, i) => (
+                                <div key={p.name} className="space-y-2">
+                                    <div className="flex justify-between text-xs font-bold">
+                                        <span className="text-slate-600">{p.name}</span>
+                                        <span className="text-indigo-600">{p.count} students</span>
+                                    </div>
+                                    <div className="h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000 ease-out"
+                                            style={{ width: `${Math.min((p.count / (stats.total || 1)) * 100, 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                            {platformStats.length === 0 && <p className="text-center py-10 text-xs font-bold text-slate-300 uppercase tracking-widest">No data available</p>}
+                        </div>
+                    </Card>
+
+                    {/* Yearly Distribution */}
+                    <Card className="p-8 space-y-6 border-none shadow-xl bg-white">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                Yearly Activity
+                            </h3>
+                            <LayoutDashboard className="w-5 h-5 text-emerald-100 fill-emerald-500" />
+                        </div>
+                        <div className="space-y-4">
+                            {yearlyStats.length > 0 ? yearlyStats.map((y) => (
+                                <div key={y.year} className="flex items-center gap-4">
+                                    <div className="w-20 text-[10px] font-black uppercase text-slate-400 text-right">{y.year}</div>
+                                    <div className="flex-1 h-10 bg-slate-50 rounded-2xl border border-slate-100/50 relative overflow-hidden flex items-center px-4">
+                                        <div 
+                                            className="absolute left-0 top-0 bottom-0 bg-emerald-500/10 border-r-2 border-emerald-500 transition-all duration-1000 ease-out"
+                                            style={{ width: `${Math.min((y.accepted / (y.total || 1)) * 100, 100)}%` }}
+                                        />
+                                        <span className="relative z-10 text-xs font-bold text-slate-700">{y.total} <span className="text-[10px] opacity-50">Total</span></span>
+                                        <span className="relative z-10 ml-auto text-[10px] font-black text-emerald-600 uppercase tracking-widest">{y.accepted} <span className="opacity-50">Verified</span></span>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-center py-10 text-xs font-bold text-slate-300 uppercase tracking-widest">No data available</p>
+                            )}
+                        </div>
+                    </Card>
+
+                    {/* Faculty Activity */}
+                    <Card className="p-8 space-y-6 border-none shadow-xl bg-white">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-rose-500" />
+                                Top Contributors
+                            </h3>
+                            <UserCircle className="w-5 h-5 text-rose-100 fill-rose-500" />
+                        </div>
+                        <div className="space-y-3">
+                            {facultyActivity.length > 0 ? facultyActivity.map((f, i) => (
+                                <div key={f.faculty_name} className="flex items-center justify-between p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-slate-50 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200 shadow-sm group-hover:border-rose-200 transition-colors">
+                                            {i + 1}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-black text-slate-700">{f.faculty_name}</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Department Faculty</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                                        <span className="text-sm font-black text-rose-600 font-mono tracking-tighter">{f.verified_count}</span>
+                                        <Archive className="w-3 h-3 text-rose-200" />
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-center py-10 text-xs font-bold text-slate-300 uppercase tracking-widest">No activity tracked</p>
+                            )}
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Monthly Trend Section */}
+                <div className="grid grid-cols-1 gap-8">
+                    <Card className="p-8 space-y-8 border-none shadow-xl bg-white overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 opacity-50" />
+                        
+                        <div className="flex items-center justify-between relative z-10">
+                            <div>
+                                <h3 className="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] flex items-center gap-2 mb-1">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-600" />
+                                    Submission Trends
+                                </h3>
+                                <p className="text-xs font-bold text-slate-400">Monthly certificate upload activity</p>
+                            </div>
+                            <TrendingUp className="w-6 h-6 text-indigo-200" />
+                        </div>
+
+                        <div className="flex items-end justify-between gap-4 h-48 relative z-10 px-4">
+                            {monthlyTrend.length > 0 ? monthlyTrend.map((t, i) => (
+                                <div key={t.month} className="flex-1 flex flex-col items-center gap-4 group">
+                                    <div className="w-full relative flex flex-col items-center">
+                                        <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-black px-2 py-1 rounded-md mb-2 pointer-events-none whitespace-nowrap">
+                                            {t.count} Certificates
+                                        </div>
+                                        <div 
+                                            className="w-full max-w-[40px] bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-2xl shadow-lg shadow-indigo-500/20 transition-all duration-700 ease-out group-hover:scale-x-110 group-hover:from-indigo-500 group-hover:to-indigo-300"
+                                            style={{ height: `${Math.max((t.count / Math.max(...monthlyTrend.map(x => x.count), 1)) * 140, 4)}px` }}
+                                        />
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter text-center h-4">{t.month}</span>
+                                </div>
+                            )) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">Awaiting more data to trend</p>
+                                </div>
+                            )}
                         </div>
                     </Card>
                 </div>
@@ -384,6 +535,7 @@ export default function HodDashboard() {
                                     <th className="px-8 py-4 text-left">Certificate</th>
                                     <th className="px-8 py-4 text-left">Academic</th>
                                     <th className="px-8 py-4 text-left font-black tracking-widest text-slate-400">Status</th>
+                                    <th className="px-8 py-4 text-left font-black tracking-widest text-slate-400">Verified By</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -422,11 +574,16 @@ export default function HodDashboard() {
                                                 {cert.verification_status}
                                             </span>
                                         </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-slate-900">{cert.verified_by_name || '-'}</span>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                                 {ledger.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-20 text-center">
+                                        <td colSpan={5} className="px-8 py-20 text-center">
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
                                                     <Search className="w-8 h-8 text-slate-200" />
@@ -461,6 +618,37 @@ function StatCard({ title, value, icon, color }: { title: string, value: number,
             <div>
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">{title}</p>
                 <p className="text-3xl font-black tracking-tight">{value}</p>
+            </div>
+        </Card>
+    );
+}
+
+function CompactStatCard({ title, value, icon, color }: { title: string, value: number, icon: React.ReactNode, color: 'indigo' | 'green' | 'yellow' | 'red' }) {
+    const colors = {
+        indigo: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+        green: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+        yellow: 'bg-amber-50 text-amber-700 border-amber-100',
+        red: 'bg-rose-50 text-rose-700 border-rose-100'
+    };
+
+    const iconColors = {
+        indigo: 'bg-indigo-100 text-indigo-600',
+        green: 'bg-emerald-100 text-emerald-600',
+        yellow: 'bg-amber-100 text-amber-600',
+        red: 'bg-rose-100 text-rose-600'
+    };
+
+    return (
+        <Card className={cn("p-5 border flex flex-col justify-between shadow-lg hover:shadow-xl transition-all duration-300 group", colors[color])}>
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform", iconColors[color])}>
+                {icon}
+            </div>
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{title}</p>
+                <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-black tracking-tight">{value}</p>
+                    <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Entry</span>
+                </div>
             </div>
         </Card>
     );

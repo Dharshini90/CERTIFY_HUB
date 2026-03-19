@@ -160,4 +160,81 @@ export class HodController {
             res.status(500).json({ error: 'Failed to generate export' });
         }
     }
+
+    static async getYearlyStats(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const department = req.user?.department;
+            if (!department) {
+                throw new AppError('Department not found in user profile', 400);
+            }
+
+            const query = `
+                SELECT 
+                    u.year,
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE verification_status = 'accepted') as accepted
+                FROM certificates c
+                JOIN users u ON c.student_id = u.id
+                WHERE u.department = $1
+                GROUP BY u.year
+                ORDER BY u.year
+            `;
+
+            const result = await pool.query(query, [department]);
+            res.json(result.rows);
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to fetch yearly stats' });
+        }
+    }
+
+    static async getFacultyActivity(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const department = req.user?.department;
+            if (!department) {
+                throw new AppError('Department not found in user profile', 400);
+            }
+
+            const query = `
+                SELECT 
+                    u.name as faculty_name,
+                    COUNT(*) as verified_count
+                FROM certificates c
+                JOIN users u ON c.verified_by = u.id
+                WHERE u.department = $1 AND c.verification_status IN ('accepted', 'rejected')
+                GROUP BY u.name
+                ORDER BY verified_count DESC
+            `;
+
+            const result = await pool.query(query, [department]);
+            res.json(result.rows);
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to fetch faculty activity' });
+        }
+    }
+
+    static async getMonthlyTrend(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const department = req.user?.department;
+            if (!department) {
+                throw new AppError('Department not found in user profile', 400);
+            }
+
+            const query = `
+                SELECT 
+                    TO_CHAR(uploaded_at, 'Mon YYYY') as month,
+                    COUNT(*) as count
+                FROM certificates c
+                JOIN users u ON c.student_id = u.id
+                WHERE u.department = $1
+                GROUP BY TO_CHAR(uploaded_at, 'Mon YYYY'), DATE_TRUNC('month', uploaded_at)
+                ORDER BY DATE_TRUNC('month', uploaded_at) DESC
+                LIMIT 6
+            `;
+
+            const result = await pool.query(query, [department]);
+            res.json(result.rows.reverse());
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to fetch monthly trend' });
+        }
+    }
 }

@@ -121,11 +121,13 @@ export class CertificateModel {
         s.department,
         s.section,
         p.name as platform_name,
-        cat.name as category_name
+        cat.name as category_name,
+        v.name as verified_by_name
        FROM certificates c
        JOIN users s ON c.student_id = s.id
        LEFT JOIN platforms p ON c.platform_id = p.id
        LEFT JOIN categories cat ON c.category_id = cat.id
+       LEFT JOIN users v ON c.verified_by = v.id
        WHERE ${whereClause}
        ORDER BY s.roll_number, c.uploaded_at DESC`,
             params

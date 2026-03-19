@@ -23,6 +23,14 @@ A centralized web-based system for managing, viewing, verifying, and exporting s
 - ✅ Bulk download with filters (creates nested ZIP structure)
 - ✅ Export reports in CSV, Excel, or PDF format
 
+### HOD Module
+- ✅ HOD login with department scoping
+- ✅ Department-level dashboard stats (total, verified, pending, rejected)
+- ✅ Platform adoption and completion rate analytics
+- ✅ Department ledger with filters (year, section, platform, status)
+- ✅ Bulk department download (filtered ZIP)
+- ✅ Export department report (Excel)
+
 ## 🛠️ Technology Stack
 
 ### Backend
@@ -175,6 +183,14 @@ Frontend will run on `http://localhost:3000`
 - `POST /api/faculty/download/bulk` - Bulk download with filters
 - `POST /api/faculty/export` - Export report (CSV/Excel/PDF)
 
+### HOD
+- `GET /api/hod/stats` - Department dashboard stats
+- `GET /api/hod/platform-adoption` - Platform adoption (per platform student counts)
+- `GET /api/hod/completion-rate` - Completion rate (verified/processed percentage)
+- `GET /api/hod/ledger` - Department ledger (filters: year, section, platform, status)
+- `POST /api/hod/bulk-download` - Bulk download filtered certificates (ZIP)
+- `POST /api/hod/export-report` - Export department report (Excel)
+
 ### Platforms
 - `GET /api/platforms` - Get all platforms
 - `GET /api/platforms/:platformId/categories` - Get platform categories
@@ -212,6 +228,24 @@ Frontend will run on `http://localhost:3000`
    - Apply filters (optional)
    - Click "Export CSV/Excel/PDF"
    - Report includes roll number, name, year, section, certificate counts
+
+### For HOD
+
+1. **Login**: Use HOD credentials (department is tied to your account)
+
+2. **View Department Dashboard**:
+   - See totals (uploaded, verified, pending, rejected)
+   - Check platform adoption and completion rate charts
+
+3. **Ledger & Filters**:
+   - Filter by year, section, platform, status
+   - Drill into certificate records for the department
+
+4. **Bulk Download**:
+   - Apply filters, then click "Bulk Download" to get a department ZIP archive
+
+5. **Export Department Report**:
+   - Click "Export" to download an Excel report containing the filtered ledger
 
 ## 🔐 Default Credentials
 

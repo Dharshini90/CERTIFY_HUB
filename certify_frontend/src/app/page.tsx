@@ -41,19 +41,21 @@ export default function HomePage() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto animate-slide-up">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto animate-slide-up content-stretch">
                     {/* Student Login Card */}
-                    <Link href="/student/login">
-                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-primary-500/20">
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className="w-24 h-24 bg-gradient-to-br from-primary-600 to-primary-400 rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-primary-500/40 group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                                    <GraduationCap className="w-12 h-12 text-white" />
+                    <Link href="/student/login" className="h-full">
+                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-primary-500/20 h-full flex flex-col">
+                            <div className="flex flex-col items-center text-center p-6 flex-1">
+                                <div className="w-20 h-20 bg-gradient-to-br from-primary-600 to-primary-400 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-primary-500/20 group-hover:scale-105 transition-transform">
+                                    <GraduationCap className="w-10 h-10 text-white" />
                                 </div>
-                                <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Student Login</h2>
-                                <p className="text-slate-500 font-medium">
-                                    Securely upload your academic and professional certificates to build your verified portfolio.
+                                <h2 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Student Portal</h2>
+                                <p className="text-slate-500 font-medium leading-relaxed">
+                                    Securely upload your academic and professional certificates to build your verified digital portfolio.
                                 </p>
-                                <div className="mt-8 text-primary-600 font-black text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                            </div>
+                            <div className="p-6 pt-0 mt-auto flex justify-center">
+                                <div className="text-primary-600 font-bold text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                                     Enter Portal <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 </div>
                             </div>
@@ -61,17 +63,19 @@ export default function HomePage() {
                     </Link>
 
                     {/* Faculty Login Card */}
-                    <Link href="/faculty/login">
-                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-secondary-500/20">
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className="w-24 h-24 bg-gradient-to-br from-secondary-600 to-secondary-400 rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-secondary-500/40 group-hover:scale-110 group-hover:-rotate-3 transition-transform">
-                                    <Users className="w-12 h-12 text-white" />
+                    <Link href="/faculty/login" className="h-full">
+                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-secondary-500/20 h-full flex flex-col">
+                            <div className="flex flex-col items-center text-center p-6 flex-1">
+                                <div className="w-20 h-20 bg-gradient-to-br from-secondary-600 to-secondary-400 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-secondary-500/20 group-hover:scale-105 transition-transform">
+                                    <Users className="w-10 h-10 text-white" />
                                 </div>
-                                <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Faculty Login</h2>
-                                <p className="text-slate-500 font-medium">
-                                    Streamline verification with bulk management and advanced reporting.
+                                <h2 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Faculty Portal</h2>
+                                <p className="text-slate-500 font-medium leading-relaxed">
+                                    Streamline certificate verification with bulk management and advanced departmental reporting.
                                 </p>
-                                <div className="mt-8 text-secondary-600 font-black text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                            </div>
+                            <div className="p-6 pt-0 mt-auto flex justify-center">
+                                <div className="text-secondary-600 font-bold text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                                     Admin Access <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 </div>
                             </div>
@@ -79,18 +83,20 @@ export default function HomePage() {
                     </Link>
 
                     {/* HOD Login Card */}
-                    <Link href="/hod/login" className="md:col-span-2 lg:col-span-1">
-                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-indigo-500/20 md:max-w-md md:mx-auto lg:max-w-none">
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-indigo-400 rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/40 group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                                    <ShieldCheck className="w-12 h-12 text-white" />
+                    <Link href="/hod/login" className="h-full md:col-span-2 lg:col-span-1">
+                        <div className="card card-hover group cursor-pointer border-2 border-transparent hover:border-indigo-500/20 h-full flex flex-col md:max-w-md md:mx-auto lg:max-w-none">
+                            <div className="flex flex-col items-center text-center p-6 flex-1">
+                                <div className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-indigo-400 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                                    <ShieldCheck className="w-10 h-10 text-white" />
                                 </div>
-                                <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">HOD Login</h2>
-                                <p className="text-slate-500 font-medium">
-                                    Heads of Departments can oversee departmental analytics and reports.
+                                <h2 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">HOD Portal</h2>
+                                <p className="text-slate-500 font-medium leading-relaxed">
+                                    Heads of Departments can oversee departmental analytics, faculty activity, and export reports.
                                 </p>
-                                <div className="mt-8 text-indigo-600 font-black text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                                    HOD Portal <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            </div>
+                            <div className="p-6 pt-0 mt-auto flex justify-center">
+                                <div className="text-indigo-600 font-bold text-sm uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                                    Manage Department <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 </div>
                             </div>
                         </div>
