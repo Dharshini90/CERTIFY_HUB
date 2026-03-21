@@ -34,7 +34,10 @@ export default function FacultySettingsPage() {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        if (!user || user.role !== 'faculty') { router.push('/faculty/login'); return; }
+        if (!user || user.role !== 'faculty' || !user.is_department_admin) { 
+            router.push('/faculty/dashboard'); 
+            return; 
+        }
         loadAll();
     }, [user]);
 

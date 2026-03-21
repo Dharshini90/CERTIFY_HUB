@@ -22,6 +22,7 @@ A centralized web-based system for managing, viewing, verifying, and exporting s
 - ✅ Download individual student certificates as ZIP
 - ✅ Bulk download with filters (creates nested ZIP structure)
 - ✅ Export reports in CSV, Excel, or PDF format
+- ✅ **Dynamic Settings (Admins Only)**: Add, edit, or delete Departments, Sections, and Platforms
 
 ### HOD Module
 - ✅ HOD login with department scoping
@@ -185,6 +186,9 @@ Frontend will run on `http://localhost:3000`
 - `GET /api/faculty/download/student/:studentId` - Download student ZIP
 - `POST /api/faculty/download/bulk` - Bulk download with filters
 - `POST /api/faculty/export` - Export report (CSV/Excel/PDF)
+- `POST /api/faculty/departments` - Create department (**Admin Only**)
+- `POST /api/faculty/sections` - Create section (**Admin Only**)
+- `POST /api/faculty/platforms` - Create platform (**Admin Only**)
 
 ### HOD
 - `GET /api/hod/stats` - Department dashboard stats
@@ -231,6 +235,11 @@ Frontend will run on `http://localhost:3000`
    - Apply filters (optional)
    - Click "Export CSV/Excel/PDF"
    - Report includes roll number, name, year, section, certificate counts
+
+6. **Settings (Super Admin Only)**:
+   - Faculty members with **Department Admin** status can access the "Settings" menu.
+   - Dynamically manage the list of **Departments**, **Sections**, and **Platforms** (including Coursera categories).
+   - Any changes made here reflect globally for all students and faculty.
 
 ### For HOD
 

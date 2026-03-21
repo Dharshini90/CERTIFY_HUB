@@ -264,10 +264,12 @@ export default function FacultyDashboard() {
                                 </>
                             )}
                             
-                            <Button variant="secondary" onClick={() => router.push('/faculty/settings')} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden lg:flex">
-                                <Settings className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                Settings
-                            </Button>
+                            {user?.is_department_admin && (
+                                <Button variant="secondary" onClick={() => router.push('/faculty/settings')} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden lg:flex">
+                                    <Settings className="w-[18px] h-[18px] mr-2 text-slate-600" />
+                                    Settings
+                                </Button>
+                            )}
                             <Button variant="secondary" onClick={handleLogout} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50">
                                 <LogOut className="w-[18px] h-[18px] mr-2 text-slate-600 hover:text-red-500 transition-colors" />
                                 Logout

@@ -50,3 +50,20 @@ export const requireRole = (role: 'student' | 'faculty' | 'hod' | ('student' | '
         next();
     };
 };
+
+export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+    }
+
+    const isHod = req.user.role === 'hod';
+    const isDeptAdmin = req.user.is_department_admin === true;
+
+    if (!isHod && !isDeptAdmin) {
+        res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
+        return;
+    }
+
+    next();
+};
