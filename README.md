@@ -4,6 +4,11 @@ A centralized web-based system for managing, viewing, verifying, and exporting s
 
 ## 🚀 Features
 
+### Universal Features
+- ✅ **Mobile-First Design**: Fully responsive layout optimized for smartphones and tablets
+- ✅ **Mobile Navigation**: Intuitive slide-out hamburger menus for seamless mobile experience
+- ✅ **Responsive Data**: Smart horizontal scrolling for large data tables on smaller screens
+
 ### Student Module
 - ✅ Secure student registration and login
 - ✅ Upload certificates with platform and category selection
@@ -22,6 +27,7 @@ A centralized web-based system for managing, viewing, verifying, and exporting s
 - ✅ Download individual student certificates as ZIP
 - ✅ Bulk download with filters (creates nested ZIP structure)
 - ✅ Export reports in CSV, Excel, or PDF format
+- ✅ **Student Management**: Securely delete student profiles and their associated records
 - ✅ **Dynamic Settings (Admins Only)**: Add, edit, or delete Departments, Sections, and Platforms
 
 ### HOD Module
@@ -29,6 +35,7 @@ A centralized web-based system for managing, viewing, verifying, and exporting s
 - ✅ **Administrative Delegation**: Create faculty accounts and grant/revoke admin powers
 - ✅ **Department Management**: List all department faculty and manage their administrative status
 - ✅ **Faculty Deletion**: Securely remove faculty profiles from the platform
+- ✅ **Profile Management**: Update HOD profile details and credentials
 - ✅ Department-level dashboard stats (total, verified, pending, rejected)
 - ✅ Platform adoption and completion rate analytics
 - ✅ Department ledger with filters (year, section, platform, status)
