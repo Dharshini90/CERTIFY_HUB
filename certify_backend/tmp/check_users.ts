@@ -15,7 +15,14 @@ async function run() {
 
     try {
         await client.connect();
-        const res = await client.query("SELECT email, name, role, is_department_admin FROM users WHERE role IN ('faculty', 'hod') LIMIT 10;");
+        const res = await client.query(`
+            SELECT u.email, u.role, u.name, COUNT(c.id) as cert_count 
+            FROM users u 
+            LEFT JOIN certificates c ON u.id = c.student_id 
+            WHERE u.role = 'student' 
+            GROUP BY u.id, u.email, u.role, u.name 
+            HAVING COUNT(c.id) > 0;
+        `);
         console.log(JSON.stringify(res.rows, null, 2));
     } catch (err) {
         console.error(err);

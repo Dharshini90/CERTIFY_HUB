@@ -28,6 +28,7 @@ import api from '@/lib/api';
 import { Certificate, Platform, PaginatedResponse } from '@/types';
 import { formatDate, isPDF, isImage, cn } from '@/lib/utils';
 import { RegisterFacultyModal } from './RegisterFacultyModal';
+import { MobileNav, NavItem } from '@/components/ui/MobileNav';
 
 export default function HodDashboard() {
     const router = useRouter();
@@ -191,6 +192,25 @@ export default function HodDashboard() {
         router.push('/');
     };
 
+    const navItems: NavItem[] = [
+        { 
+            label: 'Profile', 
+            icon: <UserCircle />, 
+            onClick: () => router.push('/hod/profile') 
+        },
+        { 
+            label: 'Register Faculty', 
+            icon: <UserPlus />, 
+            onClick: () => setIsRegisterModalOpen(true) 
+        },
+        { 
+            label: 'Logout', 
+            icon: <LogOut />, 
+            onClick: handleLogout,
+            variant: 'danger' 
+        },
+    ];
+
     const handleToggleAdmin = async (f: any) => {
         const action = f.is_department_admin ? 'revoke' : 'grant';
         if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} admin privileges for ${f.name}?`)) return;
@@ -223,9 +243,10 @@ export default function HodDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-slate-50 overflow-x-hidden">
             {/* Navigation Header */}
-            <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
+            <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 w-full">
+
                 <div className="max-w-[1600px] mx-auto px-6 py-3">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
@@ -238,35 +259,37 @@ export default function HodDashboard() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-3 border-r border-slate-200 pr-4 mr-2">
-                                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-lg border border-indigo-200">
-                                    {user?.name ? user.name.charAt(0).toUpperCase() : 'H'}
+                            <div className="hidden md:flex items-center gap-3">
+                                <div className="flex items-center gap-3 border-r border-slate-200 pr-4 mr-2">
+                                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-lg border border-indigo-200">
+                                        {user?.name ? user.name.charAt(0).toUpperCase() : 'H'}
+                                    </div>
+                                    <div className="hidden md:block text-left">
+                                        <p className="text-sm font-bold text-slate-900">{user?.name}</p>
+                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Head of Department</p>
+                                    </div>
                                 </div>
-                                <div className="hidden md:block text-left">
-                                    <p className="text-sm font-bold text-slate-900">{user?.name}</p>
-                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Head of Department</p>
-                                </div>
+                                <Button 
+                                    variant="secondary" 
+                                    onClick={() => router.push('/hod/profile')} 
+                                    className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 flex items-center"
+                                >
+                                    <UserCircle className="w-[18px] h-[18px] text-slate-600" />
+                                    <span className="hidden md:inline ml-2">Profile</span>
+                                </Button>
+                                <Button 
+                                    onClick={() => setIsRegisterModalOpen(true)}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white !py-2 !px-4 !rounded-xl text-[14px] !font-bold shadow-md shadow-indigo-500/20 group flex items-center"
+                                >
+                                    <UserPlus className="w-[18px] h-[18px] group-hover:scale-110 transition-transform" />
+                                    <span className="hidden lg:inline uppercase tracking-widest text-[10px] ml-2">Register Faculty</span>
+                                </Button>
+                                <Button variant="secondary" onClick={handleLogout} className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 flex items-center">
+                                    <LogOut className="w-[18px] h-[18px] text-slate-600 hover:text-red-500 transition-colors" />
+                                    <span className="hidden md:inline ml-2">Logout</span>
+                                </Button>
                             </div>
-                            <Button 
-                                variant="secondary" 
-                                onClick={() => router.push('/hod/profile')} 
-                                className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50"
-                            >
-                                <UserCircle className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                Profile
-                            </Button>
-                            <Button 
-                                onClick={() => setIsRegisterModalOpen(true)}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white !py-2 !px-4 !rounded-xl text-[14px] !font-bold shadow-md shadow-indigo-500/20 group"
-                            >
-                                <UserPlus className="w-[18px] h-[18px] mr-2 group-hover:scale-110 transition-transform" />
-                                <span className="hidden lg:inline uppercase tracking-widest text-[10px]">Register Faculty</span>
-                                <span className="lg:hidden">Register</span>
-                            </Button>
-                            <Button variant="secondary" onClick={handleLogout} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50">
-                                <LogOut className="w-[18px] h-[18px] mr-2 text-slate-600 hover:text-red-500 transition-colors" />
-                                Logout
-                            </Button>
+                            <MobileNav items={navItems} />
                         </div>
                     </div>
                 </div>

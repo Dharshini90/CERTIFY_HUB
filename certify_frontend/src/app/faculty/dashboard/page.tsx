@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { LogOut, Download, Eye, FileDown, Search, UserPlus, Users, CheckCircle, XCircle, Settings, List, UserCircle, Trash2 } from 'lucide-react';
+import { MobileNav, NavItem } from '@/components/ui/MobileNav';
 import api from '@/lib/api';
 import { StudentListItem, Certificate, Platform, Category, PaginatedResponse } from '@/types';
 import { formatDate, isPDF, isImage, cn } from '@/lib/utils';
@@ -204,15 +205,47 @@ export default function FacultyDashboard() {
         router.push('/');
     };
 
+    const navItems: NavItem[] = [
+        { 
+            label: 'Profile', 
+            icon: <UserCircle />, 
+            onClick: () => router.push('/faculty/profile') 
+        },
+        ...(user?.is_department_admin ? [
+            { 
+                label: 'Create Faculty', 
+                icon: <UserPlus />, 
+                onClick: () => setIsRegisterModalOpen(true) 
+            },
+            { 
+                label: 'Faculty List', 
+                icon: <List />, 
+                onClick: () => router.push('/faculty/faculty-list') 
+            },
+            { 
+                label: 'Settings', 
+                icon: <Settings />, 
+                onClick: () => router.push('/faculty/settings') 
+            },
+        ] : []),
+        { 
+            label: 'Logout', 
+            icon: <LogOut />, 
+            onClick: handleLogout,
+            variant: 'danger' 
+        },
+    ];
+
     const handleSearch = () => {
         setPagination({ ...pagination, page: 1 });
         loadStudents();
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-slate-50 overflow-x-hidden">
             {/* Header */}
-            <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
+            <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 w-full">
+
                 <div className="container-custom py-3">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
@@ -229,51 +262,55 @@ export default function FacultyDashboard() {
                                 <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-lg border border-indigo-200">
                                     {user?.name ? user.name.charAt(0).toUpperCase() : 'F'}
                                 </div>
-                                <div className="hidden md:block text-left">
+                                <div className="hidden lg:block text-left">
                                     <p className="text-sm font-bold text-slate-900">{user?.name}</p>
                                     <p className="text-xs font-medium text-slate-500 capitalize">{user?.role}</p>
                                 </div>
                             </div>
-                            <Button 
-                                variant="secondary" 
-                                onClick={() => router.push('/faculty/profile')} 
-                                className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50"
-                            >
-                                <UserCircle className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                Profile
-                            </Button>
-                            
-                            {user?.is_department_admin && (
-                                <>
-                                    <Button 
-                                        variant="secondary" 
-                                        onClick={() => setIsRegisterModalOpen(true)} 
-                                        className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex"
-                                    >
-                                        <UserPlus className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                        Create Faculty
-                                    </Button>
-                                    <Button 
-                                        variant="secondary" 
-                                        onClick={() => router.push('/faculty/faculty-list')} 
-                                        className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex"
-                                    >
-                                        <List className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                        Faculty List
-                                    </Button>
-                                </>
-                            )}
-                            
-                            {user?.is_department_admin && (
-                                <Button variant="secondary" onClick={() => router.push('/faculty/settings')} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden lg:flex">
-                                    <Settings className="w-[18px] h-[18px] mr-2 text-slate-600" />
-                                    Settings
+                            <div className="hidden md:flex items-center gap-3">
+                                <Button 
+                                    variant="secondary" 
+                                    onClick={() => router.push('/faculty/profile')} 
+                                    className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 flex items-center"
+                                >
+                                    <UserCircle className="w-[18px] h-[18px] text-slate-600" />
+                                    <span className="hidden md:inline ml-2">Profile</span>
                                 </Button>
-                            )}
-                            <Button variant="secondary" onClick={handleLogout} className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50">
-                                <LogOut className="w-[18px] h-[18px] mr-2 text-slate-600 hover:text-red-500 transition-colors" />
-                                Logout
-                            </Button>
+                                
+                                {user?.is_department_admin && (
+                                    <>
+                                        <Button 
+                                            variant="secondary" 
+                                            onClick={() => setIsRegisterModalOpen(true)} 
+                                            className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex items-center"
+                                        >
+                                            <UserPlus className="w-[18px] h-[18px] text-slate-600" />
+                                            <span className="hidden lg:inline ml-2">Register Faculty</span>
+                                        </Button>
+                                        <Button 
+                                            variant="secondary" 
+                                            onClick={() => router.push('/faculty/faculty-list')} 
+                                            className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden md:flex items-center"
+                                        >
+                                            <List className="w-[18px] h-[18px] text-slate-600" />
+                                            <span className="hidden lg:inline ml-2">Faculty List</span>
+                                        </Button>
+                                        <Button 
+                                            variant="secondary" 
+                                            onClick={() => router.push('/faculty/settings')} 
+                                            className="!py-2 !px-3 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 hidden lg:flex items-center"
+                                        >
+                                            <Settings className="w-[18px] h-[18px] text-slate-600" />
+                                            <span className="hidden lg:inline ml-2">Settings</span>
+                                        </Button>
+                                    </>
+                                )}
+                                <Button variant="secondary" onClick={handleLogout} className="!py-2 !px-4 !rounded-xl text-[14px] !font-semibold border-slate-200 shadow-sm hover:bg-slate-50 flex items-center">
+                                    <LogOut className="w-[18px] h-[18px] text-slate-600 hover:text-red-500 transition-colors" />
+                                    <span className="hidden md:inline ml-2">Logout</span>
+                                </Button>
+                            </div>
+                            <MobileNav items={navItems} />
                         </div>
                     </div>
                 </div>

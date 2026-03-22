@@ -12,6 +12,7 @@ import api from '@/lib/api';
 import { Platform, Category, Certificate, StudentDashboard as DashboardData } from '@/types';
 import { formatDate, formatFileSize, cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
+import { MobileNav, NavItem } from '@/components/ui/MobileNav';
 
 export default function StudentDashboard() {
     const router = useRouter();
@@ -106,6 +107,20 @@ export default function StudentDashboard() {
         router.push('/');
     };
 
+    const navItems: NavItem[] = [
+        { 
+            label: 'Profile', 
+            icon: <UserCircle />, 
+            onClick: () => router.push('/student/profile') 
+        },
+        { 
+            label: 'Logout', 
+            icon: <LogOut />, 
+            onClick: handleLogout,
+            variant: 'danger' 
+        },
+    ];
+
     const handleDelete = async (id: string | number) => {
         if (!confirm('Are you sure you want to delete this certificate?')) return;
         try {
@@ -128,9 +143,10 @@ export default function StudentDashboard() {
     const showCategories = selectedPlatform && platforms.find(p => p.id === selectedPlatform)?.has_categories;
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-slate-50 overflow-x-hidden">
             {/* Header */}
-            <div className="glass border-b border-white/20 sticky top-0 z-50">
+            <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 w-full">
+
                 <div className="container-custom py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-4">
@@ -147,19 +163,22 @@ export default function StudentDashboard() {
                                 <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-black text-lg border border-primary-200">
                                     {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
                                 </div>
-                                <div className="hidden md:block text-left">
+                                <div className="hidden lg:block text-left">
                                     <p className="text-sm font-bold text-slate-900">{user?.name}</p>
                                     <p className="text-xs font-medium text-slate-500 capitalize">{user?.role}</p>
                                 </div>
                             </div>
-                            <Button variant="secondary" size="sm" onClick={() => router.push('/student/profile')} className="rounded-xl">
-                                <UserCircle className="w-4 h-4 mr-2" />
-                                Profile
-                            </Button>
-                            <Button variant="secondary" size="sm" onClick={handleLogout} className="rounded-xl">
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Logout
-                            </Button>
+                            <div className="hidden md:flex items-center gap-4">
+                                <Button variant="secondary" size="sm" onClick={() => router.push('/student/profile')} className="rounded-xl">
+                                    <UserCircle className="w-4 h-4" />
+                                    <span className="hidden md:inline ml-2">Profile</span>
+                                </Button>
+                                <Button variant="secondary" size="sm" onClick={handleLogout} className="rounded-xl">
+                                    <LogOut className="w-4 h-4" />
+                                    <span className="hidden md:inline ml-2">Logout</span>
+                                </Button>
+                            </div>
+                            <MobileNav items={navItems} />
                         </div>
                     </div>
                 </div>
@@ -192,7 +211,7 @@ export default function StudentDashboard() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* Upload Form */}
-                    <Card className="lg:col-span-1 h-fit sticky top-28">
+                    <Card className="lg:col-span-1 h-fit lg:sticky lg:top-28">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center text-primary-600">
                                 <Upload className="w-5 h-5" />
